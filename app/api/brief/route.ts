@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
+import { generateBriefing } from "@/lib/briefing";
 
-// POST /api/brief — generates today's AI morning briefing via Sonnet (implemented in PROMPT2)
-export async function POST() {
-  return NextResponse.json({ message: "Brief not yet implemented — see PROMPT2" }, { status: 501 });
+export async function POST(): Promise<NextResponse> {
+  try {
+    return NextResponse.json(await generateBriefing());
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

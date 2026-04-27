@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
+import { classifyUnprocessed } from "@/lib/classifier";
 
-// POST /api/classify — runs Haiku classifier on unclassified items (implemented in PROMPT2)
-export async function POST() {
-  return NextResponse.json({ message: "Classify not yet implemented — see PROMPT2" }, { status: 501 });
+export async function POST(): Promise<NextResponse> {
+  try {
+    return NextResponse.json(await classifyUnprocessed());
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
