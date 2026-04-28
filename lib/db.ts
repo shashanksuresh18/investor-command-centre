@@ -53,4 +53,10 @@ db.exec(`
   );
 `);
 
+try {
+  db.exec("ALTER TABLE items ADD COLUMN seed INTEGER NOT NULL DEFAULT 0");
+} catch {
+  // column already exists on subsequent starts — safe to ignore
+}
+
 export default db;

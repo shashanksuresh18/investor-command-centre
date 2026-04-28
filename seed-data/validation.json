@@ -1,0 +1,122 @@
+[
+  {
+    "from": "Sarah Jenkins <s.jenkins@pembertoncap.com>",
+    "subject": "Q1 2026 LP Report - Pemberton Fund IV",
+    "body": "Dear LPs,\nPlease find attached the quarterly report for Pemberton Fund IV. We are pleased to report a net IRR of 24% for the period. We have completed three new investments this quarter, including a major stake in a leading AI infrastructure provider. Capital call notices for the upcoming deployment will be sent later this week. Please review the performance metrics and let us know if you have any questions.",
+    "my_label": 10
+  },
+  {
+    "from": "Marcus Thorne <m.thorne@thornfieldventures.com>",
+    "subject": "URGENT: Board Pack - Series B Extension",
+    "body": "Hi, I've just uploaded the final board pack to the portal. We need your sign-off on the extension terms by EOD Thursday. The lead investor is pushing for a quick close, and we need the board resolution signed. Let me know if you need a quick briefing on the valuation adjustments we made following the last session.",
+    "my_label": 10
+  },
+  {
+    "from": "Elena Rossi <elena@quantum-ledger.io>",
+    "subject": "Quantum Ledger - Series A Pitch Deck",
+    "body": "Hi, I'm Elena, CEO of Quantum Ledger. We are building the next generation of cryptographic settlement layers for institutional finance. Given your background in fintech and infrastructure, I thought you'd be interested in what we're doing. We've just opened our Series A and have already secured 40% of the round from existing investors. I've attached our deck for your review. Would love to jump on a 15-min call next week.",
+    "my_label": 7
+  },
+  {
+    "from": "David Chen <d.chen@apex-analytics.com>",
+    "subject": "Monthly Performance Update - Apex Analytics",
+    "body": "Hi everyone, quick update on Apex. We hit our MRR target for March, ending at $450k. Churn remains low at 1.2%. We've successfully onboarded three Tier-1 banks onto the beta program for our new risk module. Looking forward to our next monthly check-in on Tuesday.",
+    "my_label": 6
+  },
+  {
+    "from": "James Wilson <j.wilson@riverside-advisors.com>",
+    "subject": "Capital Call Notice - Riverside Opportunity Fund",
+    "body": "Notice of Capital Call: Pursuant to the Limited Partnership Agreement, a capital call is being made for $250,000 to fund new investments and management fees. Funds should be wired to the account details provided in the attached document by no later than April 15, 2026. Failure to comply may result in default under the terms of the LPA.",
+    "my_label": 9
+  },
+  {
+    "from": "Accounts Payable <billing@xero.com>",
+    "subject": "Your Xero Invoice for March 2026",
+    "body": "Hello, your invoice for the period March 1 to March 31 is now available online. Your credit card on file has been charged $45.00. No further action is required from your side. You can download a PDF copy for your records from your account dashboard.",
+    "my_label": 1
+  },
+  {
+    "from": "Axios Pro <pro@axios.com>",
+    "subject": "Axios Pro: The latest in Fintech M&A",
+    "body": "Today's top story: Why the latest wave of fintech consolidation is just beginning. Plus, a deep dive into the regulatory hurdles facing cross-border payments in the EU. We also look at the rising valuations of seed-stage cybersecurity startups and what it means for the later-stage market.",
+    "my_label": 2
+  },
+  {
+    "from": "Tom Harris <tom.harris@gmail.com>",
+    "subject": "Coffee next week?",
+    "body": "Hey, it's been a while! Are you around for a coffee or a quick lunch next week? I'd love to hear how the new fund is going and tell you about what I've been up to at the new place. Let me know if you have any windows on Wednesday or Thursday afternoon.",
+    "my_label": 5
+  },
+  {
+    "from": "Travel Dept <bookings@concur.com>",
+    "subject": "Flight Confirmation - London to New York",
+    "body": "Your flight for London (LHR) to New York (JFK) has been confirmed for May 12, 2026. Departure: 10:45 AM. Return: May 16, 2026. Please ensure your passport is valid for at least six months from the date of travel. Your hotel booking at the Pierre is also confirmed.",
+    "my_label": 4
+  },
+  {
+    "from": "Sifted <newsletters@sifted.eu>",
+    "subject": "Sifted Daily: The unicorn that lost its horn",
+    "body": "Inside the collapse of Europe's most hyped delivery startup. Why VCs are turning their backs on B2C. Plus: The 10 French startups to watch in 2026, and how the UK's new listing rules are changing the IPO landscape for tech companies.",
+    "my_label": 2
+  },
+  {
+    "from": "Sophie Moore <s.moore@bluehorizon-vc.com>",
+    "subject": "Blue Horizon - LP Day Invitation",
+    "body": "Dear LP, we are delighted to invite you to our annual LP Day on June 20th at the Ham Yard Hotel. We will have presentations from our top-performing portfolio companies and a keynote on the future of decentralised finance. Please RSVP by May 1st to ensure we can accommodate your dietary requirements.",
+    "my_label": 8
+  },
+  {
+    "from": "DocuSign <dse@docusign.net>",
+    "subject": "Completed: Signature Request for Project Alpha",
+    "body": "All parties have completed the signing of 'Project Alpha - Subscription Agreement'. A copy of the fully executed document is attached for your records. This completes the transaction process for this stage.",
+    "my_label": 1
+  },
+  {
+    "from": "Oliver Scott <o.scott@stratford-consulting.com>",
+    "subject": "Draft Engagement Letter - Tax Advisory",
+    "body": "Hi, following our call yesterday, please find the draft engagement letter for the tax advisory work on the new SPV. We've outlined the scope and the fee structure as discussed. Let us know if you have any comments before we finalise and send for signature.",
+    "my_label": 4
+  },
+  {
+    "from": "FT Newsletters <newsletters@ft.com>",
+    "subject": "FT Daily Briefing: Markets brace for inflation data",
+    "body": "Wall Street futures are steady as investors await the latest CPI numbers. In the UK, the Chancellor hints at further tax cuts in the autumn statement. Oil prices rise on Middle East supply concerns. Plus: why private credit is the new frontier for institutional investors.",
+    "my_label": 2
+  },
+  {
+    "from": "Ben Watson <ben@cloud-stitch.com>",
+    "subject": "Quick intro? / CloudStitch",
+    "body": "Hi, I'm Ben, founder of CloudStitch. We've built an automated CI/CD pipeline for serverless architectures that reduces deployment times by 70%. We're currently raising a £1m seed round and have half of it committed. I saw you've invested in similar devtools and would love to get your thoughts on our roadmap.",
+    "my_label": 5
+  },
+  {
+    "from": "Claire Henderson <c.henderson@legal-partners.co.uk>",
+    "subject": "Action Required: NDAs for Project Bravo",
+    "body": "Hi, we've received the draft NDAs from the counterparty on Project Bravo. There are a few clauses regarding non-solicitation that seem broader than usual. I've highlighted them in the attached redline. Could you please take a look and let me know if you are comfortable with these terms?",
+    "my_label": 9
+  },
+  {
+    "from": "Jessica Bell <jessica.bell@outlook.com>",
+    "subject": "Dinner on Friday?",
+    "body": "Hey! Are we still on for dinner this Friday? I've booked a table at that new Italian place for 7:30. Let me know if that still works for you or if we need to push it back. Can't wait to catch up properly!",
+    "my_label": 6
+  },
+  {
+    "from": "Axios <newsletters@axios.com>",
+    "subject": "Axios Finish Line: The week in 10 charts",
+    "body": "A visual guide to the biggest stories of the week. From the surge in EV adoption to the shifting demographics of the American workforce. We also look at the performance of major tech stocks versus the S&P 500 and the rising cost of healthcare across the globe.",
+    "my_label": 1
+  },
+  {
+    "from": "Robert Green <r.green@green-fintech.com>",
+    "subject": "Follow up: Partnership discussion",
+    "body": "Hi, just following up on our meeting at the conference last week. I've shared your details with our product team, and they are keen to explore a potential integration between our platforms. Do you have any time for a follow-up call next Tuesday or Wednesday to discuss technical feasibility?",
+    "my_label": 5
+  },
+  {
+    "from": "Internal Comms <hr@company.com>",
+    "subject": "Quarterly All-Hands Meeting - Recording Available",
+    "body": "Hi team, if you missed the quarterly all-hands meeting this morning, the recording and the slide deck are now available on the intranet. We covered the Q1 results, the roadmap for the next six months, and introduced several new team members. Please take the time to watch if you were unable to attend live.",
+    "my_label": 3
+  }
+]
