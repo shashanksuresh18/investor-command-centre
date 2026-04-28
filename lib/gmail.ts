@@ -2,27 +2,56 @@ import { randomUUID } from "crypto";
 import { google, gmail_v1 } from "googleapis";
 import db from "./db";
 
+interface AccountConfig {
+  email: string | null;
+  refresh_token: string;
+}
+
 export interface EmailSummary {
   id: string;
   from: string;
   subject: string;
   body: string;
   date: string;
+  account: string | null;
 }
 
-function getGmailClient(): gmail_v1.Gmail {
+function getAccountConfigs(): AccountConfig[] {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
-  if (!clientId || !clientSecret || !refreshToken) {
-    throw new Error("Gmail: missing OAuth credentials");
+  if (!clientId || !clientSecret) {
+    throw new Error("Gmail: missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET");
   }
 
-  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
-  oauth2Client.setCredentials({ refresh_token: refreshToken });
+  const raw = process.env.GMAIL_ACCOUNTS_JSON;
+  if (raw) {
+    const parsed = JSON.parse(raw) as unknown[];
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      throw new Error("Gmail: GMAIL_ACCOUNTS_JSON must be a non-empty array");
+    }
 
-  return google.gmail({ version: "v1", auth: oauth2Client });
+    const normalised: AccountConfig[] = parsed.map((entry: unknown, i: number) => {
+      const raw = entry as Record<string, unknown>;
+      const email = raw.email as string | undefined;
+      const token = (raw.refresh_token ?? raw.refreshToken) as string | undefined;
+      if (!email || !token) {
+        throw new Error(
+          `Gmail: GMAIL_ACCOUNTS_JSON entry ${i} is missing email or refresh_token`
+        );
+      }
+      return { email, refresh_token: token };
+    });
+
+    return normalised;
+  }
+
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+  if (!refreshToken) {
+    throw new Error("Gmail: set GMAIL_ACCOUNTS_JSON or GOOGLE_REFRESH_TOKEN");
+  }
+
+  return [{ email: null, refresh_token: refreshToken }];
 }
 
 function decodeBody(data?: string | null): string {
@@ -60,8 +89,16 @@ function getHeader(
   return header?.value ?? "";
 }
 
-export async function fetchRecentEmails(limit = 100): Promise<EmailSummary[]> {
-  const gmail = getGmailClient();
+async function fetchEmailsForAccount(
+  config: AccountConfig,
+  clientId: string,
+  clientSecret: string,
+  limit: number
+): Promise<EmailSummary[]> {
+  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
+  oauth2Client.setCredentials({ refresh_token: config.refresh_token });
+  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+
   const list = await gmail.users.messages.list({
     userId: "me",
     q: "in:inbox",
@@ -95,27 +132,49 @@ export async function fetchRecentEmails(limit = 100): Promise<EmailSummary[]> {
       subject: getHeader(headers, "subject"),
       body: decodeBody(bodyData),
       date: parsedDate.toISOString(),
+      account: config.email,
     });
   }
 
   return emails;
 }
 
+export async function fetchRecentEmails(limit = 100): Promise<EmailSummary[]> {
+  const configs = getAccountConfigs();
+  const clientId = process.env.GOOGLE_CLIENT_ID!;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET!;
+
+  const results = await Promise.allSettled(
+    configs.map((cfg) => fetchEmailsForAccount(cfg, clientId, clientSecret, limit))
+  );
+
+  const all: EmailSummary[] = [];
+  for (let i = 0; i < results.length; i += 1) {
+    const result = results[i];
+    if (result.status === "fulfilled") {
+      all.push(...result.value);
+    } else {
+      console.error(`Gmail: failed for account ${configs[i].email}:`, result.reason);
+    }
+  }
+
+  return all;
+}
+
 export async function syncEmailsToItems(): Promise<{ upserted: number }> {
   const emails = await fetchRecentEmails(100);
   const insert = db.prepare(`
-    INSERT INTO items (
+    INSERT OR IGNORE INTO items (
       id, source, source_id, title, body, sender, timestamp, classified,
       category, urgency, financial_impact, relationship_importance,
       actionability, risk, action_required, suggested_action, reasoning,
-      priority_score, user_feedback, created_at, updated_at
+      priority_score, user_feedback, source_account, created_at, updated_at
     ) VALUES (
       ?, ?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
-      ?, ?, ?, ?
+      ?, ?, ?, ?, ?
     )
-    ON CONFLICT(source, source_id) DO NOTHING
   `);
 
   let upserted = 0;
@@ -142,6 +201,7 @@ export async function syncEmailsToItems(): Promise<{ upserted: number }> {
       null,
       null,
       null,
+      email.account,
       now,
       now
     );

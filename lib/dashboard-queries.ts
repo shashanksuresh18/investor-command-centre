@@ -1,6 +1,11 @@
 import db from "./db";
 import type { Item } from "./schema";
 
+type ItemRow = Omit<Item, "classified" | "action_required"> & {
+  classified: number;
+  action_required: number | null;
+};
+
 export interface PortfolioItem {
   ticker: string;
   currentPrice: number;
@@ -32,11 +37,12 @@ export function getDashboardData(demoMode: boolean): DashboardData {
   const seed = demoMode ? 1 : 0;
   const items = db.prepare(
     "SELECT * FROM items WHERE seed = ? AND priority_score IS NOT NULL ORDER BY priority_score DESC LIMIT 30"
-  ).all(seed) as any[];
+  ).all(seed) as ItemRow[];
 
   // Convert SQLite integers (0/1) back to booleans for the Zod-based Item type
   const processedItems: Item[] = items.map(item => ({
     ...item,
+    source_account: item.source_account ?? null,
     classified: Boolean(item.classified),
     action_required: item.action_required === null ? null : Boolean(item.action_required),
   }));

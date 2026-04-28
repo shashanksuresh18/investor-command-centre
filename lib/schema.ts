@@ -4,6 +4,7 @@ export const ItemSchema = z.object({
   id: z.string().uuid(),
   source: z.enum(["gmail", "trading212"]),
   source_id: z.string(),
+  source_account: z.string().nullable(),
   title: z.string(),
   body: z.string(),
   sender: z.string(),

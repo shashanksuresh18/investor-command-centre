@@ -21,11 +21,14 @@ Scoring guidance:
 - A pitch deck from an unknown founder is category='pipeline', relationship_importance 4-6
 - Calendar invites, expense admin: category='admin', urgency depends on date
 - Personal email from friend/family: category='personal', relationship varies
-- Auto-generated notifications with no action: category='noise', all scores 1-3`;
+- Auto-generated notifications with no action: category='noise', all scores 1-3
+
+When the source_account field is present, weight relationship_importance with that specific inbox in mind - emails to a personal address may carry different relationship signals than a work address.`;
 
 export function buildClassifyUserPrompt(item: Item): string {
+  const accountLine = item.source_account ? `Account: ${item.source_account}\n` : "";
   return `Item source: ${item.source}
-From: ${item.sender}
+${accountLine}From: ${item.sender}
 Subject: ${item.title}
 Date: ${item.timestamp}
 Body:

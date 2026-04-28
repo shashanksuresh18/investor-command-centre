@@ -45,8 +45,15 @@ export default async function DashboardPage({
           </svg>
         )}
       </div>
-      <div className="truncate text-gray-400" title={item.sender}>
-        {item.sender.split("<")[0].trim()}
+      <div className="min-w-0">
+        <div className="truncate text-gray-400" title={item.sender}>
+          {item.sender.split("<")[0].trim()}
+        </div>
+        {item.source === "gmail" && item.source_account && (
+          <div className="text-xs text-gray-500 truncate mt-0.5" title={item.source_account}>
+            via {item.source_account}
+          </div>
+        )}
       </div>
       <div className="truncate text-gray-100 font-medium">
         {item.title}

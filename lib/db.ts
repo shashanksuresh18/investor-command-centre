@@ -59,4 +59,18 @@ try {
   // column already exists on subsequent starts — safe to ignore
 }
 
+try {
+  db.exec("ALTER TABLE items ADD COLUMN source_account TEXT");
+} catch {
+  // column already exists on subsequent starts - safe to ignore
+}
+
+try {
+  db.exec(
+    "CREATE UNIQUE INDEX idx_items_src_account ON items(source, source_id, COALESCE(source_account, ''))"
+  );
+} catch {
+  // index already exists on subsequent starts - safe to ignore
+}
+
 export default db;
