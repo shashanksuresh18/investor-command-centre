@@ -1,0 +1,37 @@
+(node:24832) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[1/3] Syncing data sources...
+  Portfolio items upserted: 5
+  Email items upserted: 0
+[2/3] Classifying items...
+  Processed: 78 items   Cost: $0.1145
+[3/3] Generating briefing...
+  Cost: $0.0137
+
+### MORNING BRIEFING ###
+**Morning Briefing — Tuesday 28 April 2026**
+
+The single item requiring a decision before markets open is your Airbus position. AIRp_EQ is down 19.1% since purchase, representing a £2.49 unrealised loss on a £12.44 cost basis. That is a significant percentage drawdown and you need to decide today whether the investment thesis still holds or whether you cut the position. Porsche (P911d_EQ) is also down 6.7%, which compounds the European equity picture and warrants a fresh look at your conviction there.
+
+On the portfolio overall, NVDA is up 19.9% today, a strong move, though the absolute exposure is trivial at £14.89. The meaningful concern remains the European auto names. With only £1,392 in available cash against a total portfolio value of £1,489, you have limited capacity to add or rebalance without closing something first. The portfolio is effectively fully deployed with very little dry powder.
+
+The highest-priority inbox item is a Google security alert from no-reply@accounts.google.com requiring you to verify recent sign-in activity. This needs checking immediately and is the only genuinely time-sensitive email. Behind that, three Trading212 position updates for Porsche, BMW and Airbus contain the data you need for the rebalancing decisions above. The remaining seven emails are recruitment noise from Gradcracker, Totaljobs, SSE and Sheffield University and can be deleted or unsubscribed from in batch.
+
+**Actions today**
+
+1. Verify Google account sign-in activity at myaccount.google.com/notifications; revoke if unrecognised. [e9bdeae8-c0de-4a02-8255-094cf778d6f0]
+2. Decide whether to hold or exit Airbus; down 19%, thesis must be reassessed now. [da8f3869-d681-411a-b5e9-63ad5e4ee645]
+3. Review Porsche position against original thesis given 6.7% single-day fall. [8ff8147f-080a-4ff2-a737-d07b2927d32e]
+4. Review BMW unrealised loss of 12% and decide hold or exit before further deterioration. [ab37ecf0-c10f-4ac6-8a47-69b4bb7a5f33]
+5. Batch-unsubscribe from recruitment job alert emails to clear inbox noise. [9add961c, ece35657, 56155e7f]
+### TOP ITEMS ###
+e9bdeae8-c0de-4a02-8255-094cf778d6f0
+8ff8147f-080a-4ff2-a737-d07b2927d32e
+ab37ecf0-c10f-4ac6-8a47-69b4bb7a5f33
+da8f3869-d681-411a-b5e9-63ad5e4ee645
+77c5fbc1-eeb3-4216-bad9-f31fd39040b5
+9add961c-89fc-4839-8ca5-d8e102dd3b93
+58d6fb84-fcff-440b-b4b7-0001a2d57c61
+56155e7f-4b56-4e51-b77a-afa8dad3d302
+ece35657-993c-4bc8-a56d-7d57656edfdf
+22422b35-dbc8-4f10-bc74-c6be9af2eb7d

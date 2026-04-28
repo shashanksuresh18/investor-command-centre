@@ -53,12 +53,12 @@ export async function generateBriefing(): Promise<BriefingResult> {
   const [cash, positions] = await Promise.all([getCash(), getPositions()]);
   const topMovers = positions
     .map((position) => ({
-      ticker: position.ticker,
+      ticker: position.instrument.ticker,
       pctMove:
-        position.averagePrice === 0
+        position.averagePricePaid === 0
           ? 0
-          : (position.currentPrice - position.averagePrice) / position.averagePrice,
-      ppl: position.ppl,
+          : (position.currentPrice - position.averagePricePaid) / position.averagePricePaid,
+      ppl: position.walletImpact.unrealizedProfitLoss,
     }))
     .filter((mover) => Math.abs(mover.pctMove) > 0.02)
     .sort((a, b) => Math.abs(b.ppl) - Math.abs(a.ppl))

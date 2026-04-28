@@ -30,16 +30,38 @@ function toItem(row: ItemRow): Item {
   };
 }
 
+// Haiku 4.5 occasionally wraps JSON in markdown fences despite instructions not to.
+function stripJsonFences(text: string): string {
+  return text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+}
+
+// Model occasionally returns 0 or 11 despite the 1-10 instruction; clamp defensively.
+function clampScore(value: unknown): number {
+  const n = Number(value);
+  return Math.min(10, Math.max(1, isNaN(n) ? 1 : Math.round(n)));
+}
+
+function normalise(raw: ClassificationResult): ClassificationResult {
+  return {
+    ...raw,
+    urgency: clampScore(raw.urgency),
+    financial_impact: clampScore(raw.financial_impact),
+    relationship_importance: clampScore(raw.relationship_importance),
+    actionability: clampScore(raw.actionability),
+    risk: clampScore(raw.risk),
+  };
+}
+
 async function classifyWithRetry(item: Item): Promise<ClassificationResult | null> {
   for (let attempt = 0; attempt < 2; attempt += 1) {
-    const response = await classifyWithHaiku(
+    const raw = await classifyWithHaiku(
       CLASSIFY_SYSTEM_PROMPT,
       buildClassifyUserPrompt(item),
       "classify"
     );
 
     try {
-      return JSON.parse(response) as ClassificationResult;
+      return normalise(JSON.parse(stripJsonFences(raw)) as ClassificationResult);
     } catch (error) {
       if (attempt === 1) {
         console.error(`Failed to parse classification JSON for item ${item.id}`, error);

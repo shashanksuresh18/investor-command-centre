@@ -2,39 +2,62 @@ import { randomUUID } from "crypto";
 import db from "./db";
 
 export interface T212Cash {
+  free: number;
   invested: number;
   result: number;
   total: number;
-  free: number;
 }
 
 export interface T212Position {
-  ticker: string;
+  instrument: { ticker: string; name: string; isin: string; currency: string };
+  createdAt: string;
   quantity: number;
-  averagePrice: number;
+  quantityAvailableForTrading: number;
   currentPrice: number;
-  ppl: number;
-  fxPpl: number;
+  averagePricePaid: number;
+  walletImpact: {
+    currency: string;
+    totalCost: number;
+    currentValue: number;
+    unrealizedProfitLoss: number;
+    fxImpact: number;
+  };
 }
 
+// The raw envelope returned by /equity/history/orders
+interface T212OrderItem {
+  order: {
+    id: number;
+    ticker: string;
+    status: string;
+    filledValue: number;
+    createdAt: string;
+  };
+  fill?: unknown;
+}
+
+// Flattened convenience type used by consumers of this module
 export interface T212Order {
-  id: string;
+  id: number;
   ticker: string;
   status: string;
   filledValue: number;
-  dateCreated: string;
-  dateModified: string;
+  createdAt: string;
+}
+
+interface T212OrdersResponse {
+  items: T212OrderItem[];
+  nextPagePath: string | null;
 }
 
 function getAuthHeader(): string {
   const apiKey = process.env.T212_API_KEY;
   const apiSecret = process.env.T212_API_SECRET;
-
   if (!apiKey || !apiSecret) {
-    throw new Error("T212: missing API credentials");
+    throw new Error("T212: missing T212_API_KEY or T212_API_SECRET");
   }
-
-  return `Basic ${Buffer.from(`${apiKey}:${apiSecret}`).toString("base64")}`;
+  const encoded = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
+  return `Basic ${encoded}`;
 }
 
 async function t212Get<T>(path: string): Promise<T> {
@@ -56,7 +79,8 @@ async function t212Get<T>(path: string): Promise<T> {
     throw new Error("T212: rate limited (429) — retry after 30 s");
   }
   if (!res.ok) {
-    throw new Error(`T212: unexpected status ${res.status}`);
+    const body = await res.text().catch(() => "");
+    throw new Error(`T212: unexpected status ${res.status} — ${body.slice(0, 200)}`);
   }
 
   return res.json() as Promise<T>;
@@ -71,14 +95,21 @@ export async function getPositions(): Promise<T212Position[]> {
 }
 
 export async function getRecentOrders(limit = 20): Promise<T212Order[]> {
-  return t212Get<T212Order[]>(`/equity/history/orders?limit=${limit}`);
+  const response = await t212Get<T212OrdersResponse>(
+    `/equity/history/orders?limit=${limit}`
+  );
+  return (response.items ?? []).map((item) => item.order);
 }
 
 export async function syncPortfolioToItems(): Promise<{ upserted: number }> {
-  const [positions, orders] = await Promise.all([getPositions(), getRecentOrders()]);
+  const [positions, orders] = await Promise.all([
+    getPositions(),
+    getRecentOrders(),
+  ]);
+
   const recentCutoff = Date.now() - 86_400_000;
   const recentOrders = orders.filter(
-    (order) => new Date(order.dateCreated).getTime() >= recentCutoff
+    (order) => new Date(order.createdAt).getTime() >= recentCutoff
   );
   const recentTickers = new Set(recentOrders.map((order) => order.ticker));
 
@@ -101,17 +132,18 @@ export async function syncPortfolioToItems(): Promise<{ upserted: number }> {
   `);
 
   let upserted = 0;
-
   for (const position of positions) {
+    const ticker = position.instrument.ticker;
     const pctMove =
-      position.averagePrice === 0
+      position.averagePricePaid === 0
         ? 0
-        : (position.currentPrice - position.averagePrice) / position.averagePrice;
+        : (position.currentPrice - position.averagePricePaid) / position.averagePricePaid;
+
     const matchingOrders = recentOrders.filter(
-      (order) => order.ticker === position.ticker
+      (order) => order.ticker === ticker
     );
 
-    if (Math.abs(pctMove) <= 0.02 && !recentTickers.has(position.ticker)) {
+    if (Math.abs(pctMove) <= 0.02 && !recentTickers.has(ticker)) {
       continue;
     }
 
@@ -119,8 +151,8 @@ export async function syncPortfolioToItems(): Promise<{ upserted: number }> {
     const result = upsert.run(
       randomUUID(),
       "trading212",
-      position.ticker,
-      `Position: ${position.ticker}`,
+      ticker,
+      `Position: ${ticker}`,
       JSON.stringify({ position, recentOrders: matchingOrders }),
       "trading212",
       now,
