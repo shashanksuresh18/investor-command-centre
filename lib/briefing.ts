@@ -6,8 +6,11 @@ import {
   buildBriefingUserPrompt,
   type PortfolioSnapshot,
 } from "./prompts/briefing";
+import { fetchTodaysEvents } from "./calendar";
 import { getCash, getPositions } from "./trading212";
 import type { Item } from "./schema";
+import type { TaskSummary } from "./dashboard-queries";
+import type { CalendarEvent } from "./calendar";
 
 type ItemRow = Omit<Item, "classified" | "action_required"> & {
   classified: number;
@@ -36,6 +39,35 @@ function getBriefingCostSince(createdAt: string): number {
     )
     .get("briefing", createdAt) as { cost: number };
   return row.cost;
+}
+
+function getTodaysTasks(): TaskSummary[] {
+  const taskRows = db.prepare(`
+    SELECT id, title, body FROM items
+    WHERE source = 'notion' AND seed = 0
+    ORDER BY urgency DESC, timestamp ASC LIMIT 5
+  `).all() as { id: string; title: string; body: string }[];
+
+  return taskRows.map((row) => {
+    try {
+      const parsed = JSON.parse(row.body) as Record<string, unknown>;
+      return {
+        id: row.id,
+        title: row.title,
+        status: (parsed.status as string) ?? "Unknown",
+        due_date: (parsed.due_date as string | null) ?? null,
+        priority: (parsed.priority as string | null) ?? null,
+      };
+    } catch {
+      return {
+        id: row.id,
+        title: row.title,
+        status: "Unknown",
+        due_date: null,
+        priority: null,
+      };
+    }
+  });
 }
 
 export async function generateBriefing(): Promise<BriefingResult> {
@@ -70,11 +102,20 @@ export async function generateBriefing(): Promise<BriefingResult> {
     totalValue: cash.total,
     topMovers,
   };
+  const tasks = getTodaysTasks();
+  let calendarEvents: CalendarEvent[] = [];
+  if (process.env.CALENDAR_REFRESH_TOKEN || process.env.GOOGLE_REFRESH_TOKEN) {
+    try {
+      calendarEvents = await fetchTodaysEvents();
+    } catch (error) {
+      console.error("Calendar fetch failed (non-fatal):", error);
+    }
+  }
   const today = new Date().toISOString().slice(0, 10);
   const callStartedAt = new Date().toISOString();
   const content = await synthesiseWithSonnet(
     BRIEFING_SYSTEM_PROMPT,
-    buildBriefingUserPrompt(items, portfolio, today),
+    buildBriefingUserPrompt(items, portfolio, today, tasks, calendarEvents),
     "briefing"
   );
   const cost_usd = getBriefingCostSince(callStartedAt);

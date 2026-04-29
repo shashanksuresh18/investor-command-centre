@@ -13,6 +13,7 @@ export interface T212Position {
   createdAt: string;
   quantity: number;
   quantityAvailableForTrading: number;
+  quantityInPies: number;
   currentPrice: number;
   averagePricePaid: number;
   walletImpact: {
@@ -22,6 +23,18 @@ export interface T212Position {
     unrealizedProfitLoss: number;
     fxImpact: number;
   };
+}
+
+export interface PortfolioSummary {
+  totalValue: number;
+  freeCash: number;
+  currency: string;
+  topMovers: Array<{
+    ticker: string;
+    name: string;
+    pctMove: number;
+    currency: string;
+  }>;
 }
 
 // The raw envelope returned by /equity/history/orders
@@ -99,6 +112,39 @@ export async function getRecentOrders(limit = 20): Promise<T212Order[]> {
     `/equity/history/orders?limit=${limit}`
   );
   return (response.items ?? []).map((item) => item.order);
+}
+
+export async function getPortfolioSummary(): Promise<PortfolioSummary> {
+  const [cash, positions] = await Promise.all([getCash(), getPositions()]);
+  const topMovers = positions
+    .map((position) => {
+      const pctMove =
+        position.averagePricePaid === 0
+          ? 0
+          : (position.currentPrice - position.averagePricePaid) /
+            position.averagePricePaid;
+
+      return {
+        ticker: position.instrument.ticker,
+        name: position.instrument.name,
+        pctMove,
+        currency: position.instrument.currency,
+      };
+    })
+    .sort((a, b) => Math.abs(b.pctMove) - Math.abs(a.pctMove))
+    .slice(0, 3);
+
+  const positionsValue = positions.reduce(
+    (sum, position) => sum + position.currentPrice * position.quantity,
+    0
+  );
+
+  return {
+    totalValue: cash.free + positionsValue,
+    freeCash: cash.free,
+    currency: "GBP",
+    topMovers,
+  };
 }
 
 export async function syncPortfolioToItems(): Promise<{ upserted: number }> {

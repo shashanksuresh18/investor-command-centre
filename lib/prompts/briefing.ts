@@ -1,4 +1,6 @@
 import type { Item } from "../schema";
+import type { TaskSummary } from "../dashboard-queries";
+import type { CalendarEvent } from "../calendar";
 
 export const BRIEFING_SYSTEM_PROMPT = `You are a chief-of-staff preparing a morning briefing for a finance executive. Write in plain, direct British English. No corporate filler, no rhetorical questions, no em dashes, no bullet points inside prose. Three short paragraphs, then an 'Actions today' list of 3-5 items.
 
@@ -6,7 +8,9 @@ Paragraph 1: What needs attention today. Lead with the single most important ite
 Paragraph 2: Portfolio state. Only mention moves > 2% or meaningful news.
 Paragraph 3: Inbox summary. Mention top 2-3 emails by priority, group the rest.
 
-Actions today: imperative, specific, each under 15 words. Include the item id in brackets so the executive can click through.`;
+Actions today: imperative, specific, each under 15 words. Include the item id in brackets so the executive can click through.
+When tasks appear in TODAY'S TASKS, include the most urgent ones in the 'Actions today' list alongside email actions, using their item IDs.
+Tie portfolio events and emails to calendar items where relevant. If a meeting later today relates to a portfolio holding or pipeline company, flag it.`;
 
 export interface PortfolioSnapshot {
   cash: number;
@@ -22,7 +26,9 @@ function fmtPct(pctMove: number): string {
 export function buildBriefingUserPrompt(
   items: Item[],
   portfolio: PortfolioSnapshot,
-  date: string
+  date: string,
+  tasks?: TaskSummary[],
+  calendarEvents?: CalendarEvent[]
 ): string {
   const itemLines = items
     .map((item, i) => {
@@ -47,6 +53,42 @@ export function buildBriefingUserPrompt(
           .join("\n")
       : "  No movers above 2% threshold.";
 
+  const taskBlock =
+    tasks && tasks.length > 0
+      ? tasks
+          .map((task, i) => {
+            const due = task.due_date ? `due ${task.due_date}` : "no due date";
+            return [
+              `[${i + 1}] id=${task.id}`,
+              `    Title:    ${task.title}`,
+              `    Priority: ${task.priority ?? "None"}`,
+              `    Status:   ${task.status}`,
+              `    Due:      ${due}`,
+            ].join("\n");
+          })
+          .join("\n\n")
+      : "  No tasks synced from Notion.";
+
+  const calendarBlock =
+    calendarEvents && calendarEvents.length > 0
+      ? calendarEvents
+          .map((event, i) => {
+            const attendees =
+              event.attendees.length > 0 ? event.attendees.join(", ") : "None";
+            const description = event.description
+              ? `\n    Description: ${event.description
+                  .replace(/<[^>]*>/g, " ")
+                  .replace(/\s+/g, " ")
+                  .trim()
+                  .slice(0, 500)}`
+              : "";
+            return `[${i + 1}] ${formatEventTime(event.start)}-${formatEventTime(event.end)}
+    Title:    ${event.title}
+    Attendees: ${attendees}${description}`;
+          })
+          .join("\n\n")
+      : "  No calendar events found for today or tomorrow.";
+
   return `Date: ${date}
 
 --- PORTFOLIO SNAPSHOT ---
@@ -55,6 +97,20 @@ Total portfolio value: GBP ${portfolio.totalValue.toLocaleString("en-GB", { mini
 Top movers (>2%):
 ${moverLines}
 
+--- TODAY'S TASKS ---
+${taskBlock}
+
+--- TODAY'S CALENDAR ---
+${calendarBlock}
+
 --- TOP ITEMS (ranked by priority score) ---
 ${itemLines}`;
+}
+
+function formatEventTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 }

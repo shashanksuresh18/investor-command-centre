@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const ItemSchema = z.object({
   id: z.string().uuid(),
-  source: z.enum(["gmail", "trading212"]),
+  source: z.enum(["gmail", "trading212", "notion"]),
   source_id: z.string(),
   source_account: z.string().nullable(),
   title: z.string(),

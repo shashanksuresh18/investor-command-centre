@@ -29,14 +29,20 @@ async function main() {
 
   const { syncPortfolioToItems } = await import("../lib/trading212");
   const { syncEmailsToItems } = await import("../lib/gmail");
+  const { syncTasksToItems } = await import("../lib/notion");
   const { classifyUnprocessed } = await import("../lib/classifier");
   const { generateBriefing } = await import("../lib/briefing");
 
   console.log("[1/3] Syncing data sources...");
   const portfolio = await syncPortfolioToItems();
   const emails = await syncEmailsToItems();
+  const notion =
+    process.env.NOTION_API_KEY && process.env.NOTION_TASKS_DATABASE_ID
+      ? await syncTasksToItems()
+      : { upserted: 0 };
   console.log(`  Portfolio items upserted: ${portfolio.upserted}`);
   console.log(`  Email items upserted: ${emails.upserted}`);
+  console.log(`  Notion task items upserted: ${notion.upserted}`);
 
   console.log("[2/3] Classifying items...");
   const classifications = await classifyUnprocessed();
@@ -44,7 +50,7 @@ async function main() {
     `  Processed: ${classifications.processed} items   Cost: $${classifications.cost_usd.toFixed(4)}`
   );
 
-  console.log("[3/3] Generating briefing...");
+  console.log("[3/3] Generating briefing with calendar context...");
   const briefing = await generateBriefing();
   console.log(`  Cost: $${briefing.cost_usd.toFixed(4)}`);
   console.log("");

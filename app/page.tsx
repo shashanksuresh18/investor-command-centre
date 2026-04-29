@@ -14,7 +14,7 @@ export default async function DashboardPage({
 }) {
   const { demo } = await searchParams;
   const demoMode = demo === "true";
-  const data = getDashboardData(demoMode);
+  const data = await getDashboardData(demoMode);
 
   const today = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
@@ -28,6 +28,38 @@ export default async function DashboardPage({
     if (score >= 60) return "text-amber-400 font-bold";
     return "text-gray-400";
   };
+
+  const formatSterling = (value: number | null | undefined) =>
+    value == null
+      ? "£---,---"
+      : new Intl.NumberFormat("en-GB", {
+          style: "currency",
+          currency: "GBP",
+          maximumFractionDigits: 0,
+        }).format(value);
+
+  const topMovers = data.portfolioSummary?.topMovers.length
+    ? data.portfolioSummary.topMovers
+    : data.portfolioItems.map((item) => ({
+        ticker: item.ticker,
+        name: item.ticker,
+        pctMove: item.pctMove,
+        currency: "",
+      }));
+
+  const getPriorityStyle = (priority: string | null) => {
+    if (priority === "High") return "bg-red-950 text-red-400 border-red-900";
+    if (priority === "Medium") return "bg-amber-950 text-amber-400 border-amber-900";
+    return "bg-gray-800 text-gray-400 border-gray-700";
+  };
+
+  const formatTaskDueDate = (dueDate: string | null) =>
+    dueDate
+      ? new Date(dueDate).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+        })
+      : "—";
 
   const renderItemRow = (item: Item) => (
     <div key={item.id} className="grid grid-cols-[60px_40px_1fr_2fr_120px_40px_180px] gap-4 py-3 border-b border-gray-900 items-center text-sm group">
@@ -158,21 +190,26 @@ export default async function DashboardPage({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="bg-gray-900/50 border border-gray-900 p-6 rounded-2xl">
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total Value</p>
-              <p className="text-2xl font-bold">£---,---</p>
-              <p className="text-xs text-gray-600 mt-2">Sync with Trading 212</p>
+              <p className="text-2xl font-bold">{formatSterling(data.portfolioSummary?.totalValue)}</p>
+              <p className="text-xs text-gray-600 mt-2">Approx. raw position value + cash</p>
             </div>
             <div className="bg-gray-900/50 border border-gray-900 p-6 rounded-2xl">
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Free Cash</p>
-              <p className="text-2xl font-bold">£--,---</p>
+              <p className="text-2xl font-bold">{formatSterling(data.portfolioSummary?.freeCash)}</p>
               <p className="text-xs text-gray-600 mt-2">Ready to deploy</p>
             </div>
             <div className="md:col-span-2 bg-gray-900/50 border border-gray-900 p-6 rounded-2xl flex flex-col justify-between">
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-4">Top Movers</p>
               <div className="flex gap-8">
-                {data.portfolioItems.length > 0 ? (
-                  data.portfolioItems.map((item) => (
+                {topMovers.length > 0 ? (
+                  topMovers.map((item) => (
                     <div key={item.ticker}>
-                      <p className="text-sm font-bold">{item.ticker}</p>
+                      <p className="text-sm font-bold" title={item.name}>
+                        {item.ticker}
+                      </p>
+                      {item.currency && (
+                        <p className="text-[10px] text-gray-600 uppercase">{item.currency}</p>
+                      )}
                       <p className={`text-lg font-mono ${item.pctMove >= 0 ? "text-green-400" : "text-red-400"}`}>
                         {item.pctMove >= 0 ? "+" : ""}{(item.pctMove * 100).toFixed(2)}%
                       </p>
@@ -182,6 +219,49 @@ export default async function DashboardPage({
                   <p className="text-sm text-gray-500 italic">No data available</p>
                 )}
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Today's Tasks */}
+        <section>
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-purple-500 mb-6 flex items-center gap-3">
+            <span className="w-8 h-[1px] bg-purple-500/30"></span>
+            Today&apos;s Tasks
+          </h2>
+          <div className="bg-gray-900/30 border border-gray-900 rounded-2xl overflow-hidden">
+            <div className="px-6">
+              {data.todaysTasks.length > 0 ? (
+                data.todaysTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="flex items-center gap-4 py-3 border-b border-gray-800 last:border-0 text-sm"
+                  >
+                    <span
+                      className={`text-[10px] uppercase px-2 py-0.5 rounded-full border ${getPriorityStyle(
+                        task.priority
+                      )}`}
+                    >
+                      {task.priority ?? "Low"}
+                    </span>
+                    <div className="min-w-0 flex-1 truncate text-gray-100 font-medium">
+                      {task.title}
+                    </div>
+                    <div className="text-xs text-gray-500 whitespace-nowrap">
+                      {formatTaskDueDate(task.due_date)}
+                    </div>
+                    <div className="text-xs text-gray-600 whitespace-nowrap">
+                      {task.status}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center text-gray-500 italic">
+                  {demoMode
+                    ? "Notion tasks not included in demo data. Toggle to Live to see your real tasks."
+                    : "No tasks pulled from Notion. Confirm NOTION_TASKS_DATABASE_ID is set and the integration has access to the database."}
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -211,7 +291,6 @@ export default async function DashboardPage({
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
-              { title: "Notion CRM", desc: "Founder pipeline & notes" },
               { title: "Slack", desc: "Internal team coordination" },
               { title: "Google Calendar", desc: "Daily schedule density" },
               { title: "Private Cos", desc: "Direct data room sync" },
