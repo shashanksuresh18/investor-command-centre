@@ -30,6 +30,7 @@ async function main() {
   const { syncPortfolioToItems } = await import("../lib/trading212");
   const { syncEmailsToItems } = await import("../lib/gmail");
   const { syncTasksToItems } = await import("../lib/notion");
+  const { syncDiscordToItems } = await import("../lib/discord");
   const { classifyUnprocessed } = await import("../lib/classifier");
   const { generateBriefing } = await import("../lib/briefing");
 
@@ -40,9 +41,15 @@ async function main() {
     process.env.NOTION_API_KEY && process.env.NOTION_TASKS_DATABASE_ID
       ? await syncTasksToItems()
       : { upserted: 0 };
+  const discord =
+    process.env.DISCORD_BOT_TOKEN &&
+    (process.env.DISCORD_GUILD_IDS || process.env.DISCORD_CHANNEL_IDS)
+      ? await syncDiscordToItems()
+      : { upserted: 0 };
   console.log(`  Portfolio items upserted: ${portfolio.upserted}`);
   console.log(`  Email items upserted: ${emails.upserted}`);
   console.log(`  Notion task items upserted: ${notion.upserted}`);
+  console.log(`  Discord items upserted: ${discord.upserted}`);
 
   console.log("[2/3] Classifying items...");
   const classifications = await classifyUnprocessed();
@@ -54,10 +61,18 @@ async function main() {
   const briefing = await generateBriefing();
   console.log(`  Cost: $${briefing.cost_usd.toFixed(4)}`);
   console.log("");
-  console.log("### MORNING BRIEFING ###");
-  console.log(briefing.content);
   console.log("### TOP ITEMS ###");
   console.log(briefing.top_item_ids.join("\n"));
+
+  if (process.env.SEND_WHATSAPP === "true") {
+    const { sendBriefing } = await import("../lib/whatsapp");
+    const result = await sendBriefing(briefing.content);
+    if (result.success) {
+      console.log(`[whatsapp] Sent. SID: ${result.messageSid}`);
+    } else {
+      console.error(`[whatsapp] Send failed: ${result.error}`);
+    }
+  }
 }
 
 main().catch((err) => {

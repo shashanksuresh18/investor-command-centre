@@ -1,5 +1,6 @@
 import { getDashboardData } from "@/lib/dashboard-queries";
 import RefreshButton from "@/components/RefreshButton";
+import SendWhatsAppButton from "@/components/SendWhatsAppButton";
 import WeightsPanel from "@/components/WeightsPanel";
 import DemoToggle from "@/components/DemoToggle";
 import FeedbackButtons from "@/components/FeedbackButtons";
@@ -86,6 +87,11 @@ export default async function DashboardPage({
             via {item.source_account}
           </div>
         )}
+        {item.source === "discord" && item.source_account && (
+          <div className="text-xs text-gray-500 truncate mt-0.5" title={item.source_account}>
+            in #{item.source_account}
+          </div>
+        )}
       </div>
       <div className="truncate text-gray-100 font-medium">
         {item.title}
@@ -127,6 +133,7 @@ export default async function DashboardPage({
             
             <div className="flex items-center gap-4">
               <RefreshButton />
+              <SendWhatsAppButton />
             </div>
           </div>
           <div className="mt-4">

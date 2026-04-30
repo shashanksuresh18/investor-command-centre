@@ -22,10 +22,16 @@ Scoring guidance:
 - Calendar invites, expense admin: category='admin', urgency depends on date
 - Personal email from friend/family: category='personal', relationship varies
 - Auto-generated notifications with no action: category='noise', all scores 1-3
+- Discord messages from AI engineering and finance-tech communities can be relevant signal but are typically lower urgency than direct emails. Substantive technical discussion, paper shares, and deal/market commentary are signal. Banter, reactions, and casual chat are noise. Newsletters posted as links in chats are still newsletters.
+- CRITICAL: If the email contains an authentication code, verification code, OTP, password reset link, SSO sign-in code, or any time-sensitive credential, you MUST: (1) set category to 'admin', (2) set urgency to 1 (not high - these are personal admin not professional priorities), (3) set financial_impact to 1, (4) set relationship_importance to 1, (5) set actionability to 1, (6) NEVER include the actual code, link, or credential in the suggested_action or reasoning fields, just say 'Personal account verification email - handle outside the dashboard.' This prevents authentication codes from appearing in briefings.
 
 When the source_account field is present, weight relationship_importance with that specific inbox in mind - emails to a personal address may carry different relationship signals than a work address.`;
 
 export function buildClassifyUserPrompt(item: Item): string {
+  if (item.source === "discord") {
+    return buildDiscordClassifyUserPrompt(item);
+  }
+
   const accountLine = item.source_account ? `Account: ${item.source_account}\n` : "";
   return `Item source: ${item.source}
 ${accountLine}From: ${item.sender}
@@ -33,4 +39,31 @@ Subject: ${item.title}
 Date: ${item.timestamp}
 Body:
 ${item.body}`;
+}
+
+function buildDiscordClassifyUserPrompt(item: Item): string {
+  try {
+    const parsed = JSON.parse(item.body) as {
+      guild_name?: string;
+      channel_name?: string;
+      content?: string;
+    };
+    const channel = parsed.channel_name ?? item.source_account ?? "unknown";
+    const server = parsed.guild_name ?? "unknown";
+
+    return `Item source: discord (server: ${server}, channel: #${channel})
+From: ${item.sender}
+Subject: ${item.title}
+Date: ${item.timestamp}
+Body:
+${parsed.content ?? item.body}`;
+  } catch {
+    const channel = item.source_account ?? "unknown";
+    return `Item source: discord (channel: #${channel})
+From: ${item.sender}
+Subject: ${item.title}
+Date: ${item.timestamp}
+Body:
+${item.body}`;
+  }
 }

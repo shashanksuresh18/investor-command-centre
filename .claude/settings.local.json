@@ -4,7 +4,13 @@
       "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --eslint --import-alias \"@/*\" --yes)",
       "Bash(git add *)",
       "Bash(npx tsx *)",
-      "Bash(tee pipeline-test.log)"
+      "Bash(tee pipeline-test.log)",
+      "Bash(npm run *)",
+      "Bash(node --env-file=.env.local -e \"const db = require\\('better-sqlite3'\\)\\('data/cmdcentre.db'\\); const b = db.prepare\\('SELECT content FROM briefings ORDER BY created_at DESC LIMIT 1'\\).get\\(\\); if \\(!b\\) { console.log\\('NO BRIEFING IN DB'\\); process.exit\\(0\\); } const sensitive = /verif|otp|sso|2fa|magic.link|password.reset|\\\\b\\\\d{4,8}\\\\b.*code|code.*\\\\b\\\\d{4,8}\\\\b/i.test\\(b.content\\); console.log\\(sensitive ? 'SENSITIVE CONTENT DETECTED' : 'CLEAN'\\); console.log\\('Briefing length:', b.content.length, 'chars'\\);\")",
+      "Bash(node --env-file=.env.local -e ' *)",
+      "Bash(curl -s -X POST http://localhost:3001/api/send-whatsapp -H \"Content-Type: application/json\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/send-whatsapp -H \"Content-Type: application/json\" -m 5)",
+      "Bash(curl -s -X POST http://localhost:3001/api/send-whatsapp -H \"Content-Type: application/json\" -m 5)"
     ]
   }
 }

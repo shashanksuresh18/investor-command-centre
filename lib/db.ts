@@ -11,7 +11,7 @@ db.pragma("foreign_keys = ON");
 db.exec(`
   CREATE TABLE IF NOT EXISTS items (
     id                      TEXT PRIMARY KEY,
-    source                  TEXT NOT NULL CHECK(source IN ('gmail','trading212','notion')),
+    source                  TEXT NOT NULL CHECK(source IN ('gmail','trading212','notion','discord')),
     source_id               TEXT NOT NULL,
     title                   TEXT NOT NULL,
     body                    TEXT NOT NULL,
@@ -86,6 +86,52 @@ try {
       CREATE TABLE items_migration (
         id                      TEXT PRIMARY KEY,
         source                  TEXT NOT NULL CHECK(source IN ('gmail','trading212','notion')),
+        source_id               TEXT NOT NULL,
+        title                   TEXT NOT NULL,
+        body                    TEXT NOT NULL,
+        sender                  TEXT NOT NULL,
+        timestamp               TEXT NOT NULL,
+        classified              INTEGER NOT NULL DEFAULT 0,
+        category                TEXT CHECK(category IN ('portfolio','pipeline','admin','personal','newsletter','noise')),
+        urgency                 INTEGER CHECK(urgency BETWEEN 1 AND 10),
+        financial_impact        INTEGER CHECK(financial_impact BETWEEN 1 AND 10),
+        relationship_importance INTEGER CHECK(relationship_importance BETWEEN 1 AND 10),
+        actionability           INTEGER CHECK(actionability BETWEEN 1 AND 10),
+        risk                    INTEGER CHECK(risk BETWEEN 1 AND 10),
+        action_required         INTEGER,
+        suggested_action        TEXT,
+        reasoning               TEXT,
+        priority_score          REAL CHECK(priority_score BETWEEN 0 AND 100),
+        user_feedback           TEXT CHECK(user_feedback IN ('important','noise')),
+        created_at              TEXT NOT NULL,
+        updated_at              TEXT NOT NULL,
+        seed                    INTEGER NOT NULL DEFAULT 0,
+        source_account          TEXT,
+        UNIQUE(source, source_id)
+      );
+      INSERT INTO items_migration SELECT * FROM items;
+      DROP TABLE items;
+      ALTER TABLE items_migration RENAME TO items;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_items_src_account
+        ON items(source, source_id, COALESCE(source_account, ''));
+      COMMIT;
+    `);
+  }
+} catch {
+  // migration already applied or table does not exist yet - safe to ignore
+}
+
+try {
+  const row = db.prepare(
+    "SELECT sql FROM sqlite_master WHERE type='table' AND name='items'"
+  ).get() as { sql: string } | undefined;
+
+  if (row && !row.sql.includes("'discord'")) {
+    db.exec(`
+      BEGIN;
+      CREATE TABLE items_migration (
+        id                      TEXT PRIMARY KEY,
+        source                  TEXT NOT NULL CHECK(source IN ('gmail','trading212','notion','discord')),
         source_id               TEXT NOT NULL,
         title                   TEXT NOT NULL,
         body                    TEXT NOT NULL,

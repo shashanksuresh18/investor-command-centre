@@ -10,7 +10,8 @@ Paragraph 3: Inbox summary. Mention top 2-3 emails by priority, group the rest.
 
 Actions today: imperative, specific, each under 15 words. Include the item id in brackets so the executive can click through.
 When tasks appear in TODAY'S TASKS, include the most urgent ones in the 'Actions today' list alongside email actions, using their item IDs.
-Tie portfolio events and emails to calendar items where relevant. If a meeting later today relates to a portfolio holding or pipeline company, flag it.`;
+Tie portfolio events and emails to calendar items where relevant. If a meeting later today relates to a portfolio holding or pipeline company, flag it.
+NEVER quote authentication codes, OTPs, verification numbers, password reset tokens, SSO codes, or any time-sensitive credentials in the briefing or action items. If an item is flagged as containing such content, refer to it generically as 'a personal verification email arrived overnight, handle in your inbox' without specifics.`;
 
 export interface PortfolioSnapshot {
   cash: number;
