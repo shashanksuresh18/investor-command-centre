@@ -126,7 +126,8 @@ export async function generateBriefing(): Promise<BriefingResult> {
     VALUES (?, ?, ?, ?, ?)
     ON CONFLICT(date) DO UPDATE SET
       content = excluded.content,
-      top_item_ids_json = excluded.top_item_ids_json
+      top_item_ids_json = excluded.top_item_ids_json,
+      created_at = excluded.created_at
   `).run(
     randomUUID(),
     today,

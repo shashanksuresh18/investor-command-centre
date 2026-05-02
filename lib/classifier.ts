@@ -1,6 +1,9 @@
 import db from "./db";
 import { classifyWithHaiku } from "./llm";
-import { CLASSIFY_SYSTEM_PROMPT, buildClassifyUserPrompt } from "./prompts/classify";
+import {
+  buildClassifyUserPrompt,
+  getClassifySystemPrompt,
+} from "./prompts/classify";
 import { calculateScore } from "./scoring";
 import type { Item } from "./schema";
 
@@ -55,7 +58,7 @@ function normalise(raw: ClassificationResult): ClassificationResult {
 async function classifyWithRetry(item: Item): Promise<ClassificationResult | null> {
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const raw = await classifyWithHaiku(
-      CLASSIFY_SYSTEM_PROMPT,
+      getClassifySystemPrompt(item),
       buildClassifyUserPrompt(item),
       "classify"
     );

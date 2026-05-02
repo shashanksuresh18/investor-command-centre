@@ -33,7 +33,15 @@ function truncateAtSentenceBoundary(text: string): string {
   return `${text.slice(0, limit - 3).trimEnd()}...`;
 }
 
+function cleanForWhatsApp(content: string): string {
+  return content
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\s*\[[0-9a-f]{8}(?:[-, ]+[0-9a-f]{8})*\]/gi, "");
+}
+
 export function truncateForWhatsApp(content: string): string {
+  content = cleanForWhatsApp(content);
+
   if (!content || content.trim().length === 0) {
     return "(briefing unavailable)";
   }

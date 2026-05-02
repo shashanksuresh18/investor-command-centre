@@ -5,7 +5,7 @@ import { sendBriefing } from "@/lib/whatsapp";
 export async function POST(): Promise<NextResponse> {
   try {
     const row = db
-      .prepare("SELECT content FROM briefings ORDER BY created_at DESC LIMIT 1")
+      .prepare("SELECT content FROM briefings ORDER BY date DESC, created_at DESC LIMIT 1")
       .get() as { content: string } | undefined;
 
     if (!row) {
