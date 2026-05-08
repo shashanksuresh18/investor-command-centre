@@ -19,3 +19,6 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+
+# Local screenshots / QA artifacts
+dashboard-screenshot.png
